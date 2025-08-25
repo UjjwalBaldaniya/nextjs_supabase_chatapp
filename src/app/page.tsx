@@ -1,19 +1,21 @@
-'use client';
+"use client";
 
-import { useEffect, useState } from 'react';
-import { useRouter } from 'next/navigation';
-import { supabase } from '@/lib/supabaseClient';
+import { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
+import { supabase } from "@/lib/supabaseClient";
 
 export default function Home() {
   const [loading, setLoading] = useState(true);
-  const [userEmail, setUserEmail] = useState<string | undefined>('');
+  const [userEmail, setUserEmail] = useState<string | undefined>("");
   const router = useRouter();
 
   useEffect(() => {
     const checkAuth = async () => {
-      const { data: { session } } = await supabase.auth.getSession();
+      const {
+        data: { session },
+      } = await supabase.auth.getSession();
       if (!session) {
-        router.push('/login');
+        router.push("/login");
       } else {
         setUserEmail(session.user.email);
       }
@@ -30,7 +32,7 @@ export default function Home() {
       <button
         onClick={async () => {
           await supabase.auth.signOut();
-          router.push('/login');
+          router.push("/login");
         }}
         className="mt-4 bg-red-600 text-white px-4 py-2 rounded"
       >
