@@ -1,77 +1,43 @@
-import { supabase } from "@/lib/supabaseClient";
-import React, { useEffect, useState } from "react";
+"use client";
+import React, { useEffect, useRef } from "react";
 
-interface Message {
-  id: string;
-  content: string;
-  user_id: string;
-  created_at: string;
-}
-
-interface MessagesResponse {
-  data: { messages: Message[] };
-  message: string;
-  statusCode: number;
-}
-
-const ChatWindow = () => {
-  const [messages, setMessages] = useState<Message[]>([]);
+export default function ChatWindow({ messages }: { messages: any[] }) {
+  const bottomRef = useRef<HTMLDivElement | null>(null);
 
   useEffect(() => {
-    // ✅ Fetch initial messages
-    const fetchMessages = async () => {
-      const {
-        data: { session },
-      } = await supabase.auth.getSession();
-
-      if (!session?.access_token) {
-        console.error("Not authenticated");
-        return;
-      }
-
-      const res = await fetch("http://localhost:4000/messages", {
-        headers: {
-          Authorization: `Bearer ${session.access_token}`, // ✅ Add token
-        },
-      });
-
-      const data: MessagesResponse = await res.json();
-      setMessages(data.data.messages);
-    };
-
-    fetchMessages();
-
-    // ✅ Real-time subscription
-    const channel = supabase
-      .channel("messages")
-      .on(
-        "postgres_changes",
-        {
-          event: "INSERT",
-          schema: "public",
-          table: "messages",
-        },
-        (payload) => {
-          const newMessage = payload.new as Message;
-          setMessages((prev) => [...prev, newMessage]);
-        }
-      )
-      .subscribe();
-
-    return () => {
-      supabase.removeChannel(channel);
-    };
-  }, []);
+    bottomRef.current?.scrollIntoView({ behavior: "smooth" });
+  }, [messages]);
 
   return (
-    <div className="border rounded p-4 h-96 overflow-y-auto">
-      {messages?.map((msg) => (
-        <div key={msg.id} className="mb-2">
-          {msg.content}
+    <div className="flex-1 overflow-y-auto p-4 space-y-4">
+      {messages.length === 0 && (
+        <div className="text-center text-gray-400 mt-10">
+          No messages yet. Say hello 👋
         </div>
-      ))}
+      )}
+
+      {messages.map((m) => {
+        const mine = m.isMine;
+        return (
+          <div
+            key={m.id}
+            className={`flex ${mine ? "justify-end" : "justify-start"}`}
+          >
+            <div
+              className={`${mine ? "bg-blue-600 text-white" : "bg-gray-100 text-gray-800"} max-w-[75%] p-3 rounded-2xl shadow-sm`}
+            >
+              {!mine && (
+                <div className="text-xs text-gray-500 mb-1">{m.senderName}</div>
+              )}
+              <div>{m.content}</div>
+              <div className="text-xs text-gray-300 mt-2 text-right">
+                {m.time}
+              </div>
+            </div>
+          </div>
+        );
+      })}
+      <div ref={bottomRef} />
     </div>
   );
-};
-
-export default ChatWindow;
+}

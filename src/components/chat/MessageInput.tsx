@@ -1,49 +1,50 @@
-import { supabase } from "@/lib/supabaseClient";
+"use client";
 import React, { useState } from "react";
 
-const MessageInput = () => {
-  const [input, setInput] = useState("");
+export default function MessageInput({
+  onSend,
+  disabled = false,
+}: {
+  onSend: (text: string) => void;
+  disabled?: boolean;
+}) {
+  const [text, setText] = useState("");
+  const [sending, setSending] = useState(false);
 
-  const sendMessage = async () => {
-    if (!input.trim()) return;
-
-    const {
-      data: { session },
-    } = await supabase.auth.getSession();
-
-    if (!session?.access_token) {
-      alert("You are not authenticated!");
-      return;
+  async function handleSend() {
+    if (!text.trim()) return;
+    setSending(true);
+    try {
+      await onSend(text.trim());
+      setText("");
+    } catch (e) {
+      console.error(e);
+    } finally {
+      setSending(false);
     }
-
-    await fetch("http://localhost:4000/messages", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${session.access_token}`, // ✅ Add token
-      },
-      body: JSON.stringify({ content: input, user_id: session.user.id }),
-    });
-
-    setInput("");
-  };
+  }
 
   return (
-    <div className="flex gap-2 mt-4">
-      <input
-        className="border p-2 flex-1"
-        value={input}
-        onChange={(e) => setInput(e.target.value)}
-        placeholder="Type a message"
-      />
-      <button
-        onClick={sendMessage}
-        className="bg-blue-600 text-white px-4 py-2 rounded"
-      >
-        Send
-      </button>
+    <div className="border-t p-4">
+      <div className="flex items-center gap-3">
+        <button className="p-2 rounded hover:bg-gray-100">😊</button>
+        <div className="flex-1">
+          <textarea
+            value={text}
+            onChange={(e) => setText(e.target.value)}
+            className="w-full border rounded-lg px-3 py-2 resize-none h-12"
+            placeholder="Type a message..."
+            disabled={disabled || sending}
+          />
+        </div>
+        <button
+          onClick={handleSend}
+          disabled={sending || disabled}
+          className="ml-2 px-4 py-2 rounded bg-blue-600 text-white disabled:opacity-50"
+        >
+          {sending ? "Sending..." : "Send"}
+        </button>
+      </div>
     </div>
   );
-};
-
-export default MessageInput;
+}

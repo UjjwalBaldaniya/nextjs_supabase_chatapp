@@ -1,18 +1,26 @@
 "use client";
 
+import { useRouter } from "next/navigation";
 import { useState } from "react";
-import { supabase } from "@/lib/supabaseClient";
+import { createClientComponentClient } from "@supabase/auth-helpers-nextjs";
 
-export default function SignUpPage() {
+export default function SignInPage() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const router = useRouter();
+  const supabase = createClientComponentClient();
 
-  const signUp = async () => {
-    const { error } = await supabase.auth.signUp({ email, password });
+  const signIn = async (e: any) => {
+    e.preventDefault();
+    const { error } = await supabase.auth.signInWithPassword({
+      email,
+      password,
+    });
     if (error) {
-      alert(error.message);
+      console.error(error);
     } else {
-      alert("Check your email for confirmation!");
+      router.refresh();
+      router.push("/");
     }
   };
 
@@ -20,11 +28,13 @@ export default function SignUpPage() {
     <div className="min-h-screen flex items-center justify-center bg-gray-50">
       <div className="bg-white p-8 rounded-2xl shadow-lg w-full max-w-md">
         <div className="text-center mb-6">
-          <h1 className="text-2xl font-bold">Create account</h1>
-          <p className="text-sm text-gray-500 mt-1">Sign up to use Chat</p>
+          <h1 className="text-2xl font-bold">Welcome Back</h1>
+          <p className="text-sm text-gray-500 mt-1">
+            Sign in to continue to Chat
+          </p>
         </div>
 
-        <form onSubmit={signUp} className="space-y-4">
+        <form onSubmit={signIn} className="space-y-4">
           <input
             className="w-full border rounded px-3 py-2"
             placeholder="Email"
@@ -42,15 +52,20 @@ export default function SignUpPage() {
             type="submit"
             className="w-full bg-blue-600 text-white rounded px-4 py-2"
           >
-            Sign Up
+            Sign In
           </button>
         </form>
 
         <div className="mt-4 text-center text-sm text-gray-500">
+          <div>Or continue with</div>
+          <div className="flex gap-2 justify-center mt-3">
+            <button className="px-3 py-2 border rounded">Google</button>
+            <button className="px-3 py-2 border rounded">GitHub</button>
+          </div>
           <div className="mt-4">
-            Already have an account?{" "}
-            <a href="/signin" className="text-blue-600">
-              Sign In
+            Don't have an account?
+            <a href="/signup" className="text-blue-600">
+              Sign Up
             </a>
           </div>
         </div>

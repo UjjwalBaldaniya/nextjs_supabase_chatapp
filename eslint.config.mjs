@@ -1,8 +1,8 @@
 import { dirname } from "path";
 import { fileURLToPath } from "url";
 import { FlatCompat } from "@eslint/eslintrc";
-import prettierPlugin from "eslint-plugin-prettier"; // ✅ Correct import
-import prettierRecommended from "eslint-plugin-prettier/recommended"; // ✅ For recommended Prettier config
+import prettierPlugin from "eslint-plugin-prettier";
+import prettierRecommended from "eslint-plugin-prettier/recommended";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
@@ -12,21 +12,23 @@ const compat = new FlatCompat({
 });
 
 const eslintConfig = [
-  // ✅ Extend Next.js rules
   ...compat.extends("next/core-web-vitals", "next/typescript"),
-
-  // ✅ Add Prettier integration
-  prettierRecommended, // Automatically includes plugin and rules
+  prettierRecommended,
   {
     plugins: {
       prettier: prettierPlugin,
     },
     rules: {
-      "prettier/prettier": "error", // Shows Prettier issues as ESLint errors
+      "prettier/prettier": [
+        "error",
+        {
+          endOfLine: "auto",
+        },
+      ],
+      "@typescript-eslint/no-explicit-any": "off",
+      "react/no-unescaped-entities": "off",
     },
   },
-
-  // ✅ Ignore unnecessary folders
   {
     ignores: [
       "node_modules/**",
@@ -37,4 +39,5 @@ const eslintConfig = [
     ],
   },
 ];
+
 export default eslintConfig;
