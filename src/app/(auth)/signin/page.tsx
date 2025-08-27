@@ -3,6 +3,7 @@
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { createClientComponentClient } from "@supabase/auth-helpers-nextjs";
+import { toast } from "react-toastify";
 
 export default function SignInPage() {
   const [email, setEmail] = useState("");
@@ -10,17 +11,30 @@ export default function SignInPage() {
   const router = useRouter();
   const supabase = createClientComponentClient();
 
-  const signIn = async (e: any) => {
+  const signIn = async (e: React.FormEvent) => {
     e.preventDefault();
-    const { error } = await supabase.auth.signInWithPassword({
-      email,
-      password,
-    });
-    if (error) {
-      console.error(error);
-    } else {
-      router.refresh();
-      router.push("/");
+
+    if (!email || !password) {
+      toast.error("Please enter email and password.");
+      return;
+    }
+
+    try {
+      const { error } = await supabase.auth.signInWithPassword({
+        email,
+        password,
+      });
+
+      if (error) {
+        toast.error(error.message);
+      } else {
+        toast.success("Signed in successfully!");
+        router.refresh();
+        router.push("/");
+      }
+    } catch (err) {
+      console.error("Unexpected error:", err);
+      toast.error("Something went wrong. Please try again.");
     }
   };
 

@@ -11,7 +11,7 @@ export async function middleware(req: NextRequest) {
   } = await supabase.auth.getSession();
 
   const isAuthPage =
-    req.nextUrl.pathname.startsWith("/login") ||
+    req.nextUrl.pathname.startsWith("/signin") ||
     req.nextUrl.pathname.startsWith("/signup");
 
   // ✅ If logged in and tries to visit login/signup, redirect to home
@@ -24,7 +24,7 @@ export async function middleware(req: NextRequest) {
   // ✅ If not logged in and tries to access protected routes
   if (!session && !isAuthPage) {
     const redirectUrl = req.nextUrl.clone();
-    redirectUrl.pathname = "/login";
+    redirectUrl.pathname = "/signin";
     return NextResponse.redirect(redirectUrl);
   }
 
@@ -32,5 +32,5 @@ export async function middleware(req: NextRequest) {
 }
 
 export const config = {
-  matcher: ["/", "/chat", "/login", "/signup"],
+  matcher: ["/", "/chat", "/signin", "/signup"],
 };

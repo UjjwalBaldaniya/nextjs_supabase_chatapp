@@ -15,7 +15,7 @@ export default function Home() {
         data: { session },
       } = await supabase.auth.getSession();
       if (!session) {
-        router.push("/login");
+        router.push("/signin");
       } else {
         setUserEmail(session.user.email);
       }
@@ -32,7 +32,7 @@ export default function Home() {
       <button
         onClick={async () => {
           await supabase.auth.signOut();
-          router.push("/login");
+          router.push("/signin");
         }}
         className="mt-4 bg-red-600 text-white px-4 py-2 rounded"
       >
