@@ -1,6 +1,7 @@
 "use client";
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import Modal from "../ui/Modal";
+import { getProfiles, Profile } from "@/services/profile.services";
 
 export default function CreateGroupModal({
   open,
@@ -11,19 +12,28 @@ export default function CreateGroupModal({
   onClose: () => void;
   onCreate: (payload: any) => void;
 }) {
+  const [users, setUsers] = useState<Profile[]>([]);
   const [name, setName] = useState("");
   const [members, setMembers] = useState<string[]>([]);
-  const dummyUsers = [
-    { id: "u1", name: "Alice" },
-    { id: "u2", name: "Bob" },
-    { id: "u3", name: "Charlie" },
-  ];
 
   function toggleMember(id: string) {
     setMembers((prev) =>
       prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id]
     );
   }
+
+  const fetchProfiles = async () => {
+    try {
+      const response = await getProfiles();
+      setUsers(response.data.profile ?? []);
+    } catch (err: any) {
+      console.error("Error fetching profiles:", err);
+    }
+  };
+
+  useEffect(() => {
+    fetchProfiles();
+  }, []);
 
   return (
     <Modal open={open} onClose={onClose} title="Create Group">
@@ -36,7 +46,7 @@ export default function CreateGroupModal({
         />
         <div className="text-sm text-gray-500">Add members</div>
         <div className="max-h-40 overflow-auto border rounded p-2">
-          {dummyUsers.map((u) => (
+          {users.map((u) => (
             <label
               key={u.id}
               className="flex items-center gap-2 p-2 hover:bg-gray-50 rounded"
@@ -46,12 +56,15 @@ export default function CreateGroupModal({
                 checked={members.includes(u.id)}
                 onChange={() => toggleMember(u.id)}
               />
-              <div>{u.name}</div>
+              <div>{u.full_name}</div>
             </label>
           ))}
         </div>
         <div className="flex justify-end gap-2">
-          <button onClick={onClose} className="px-4 py-2 rounded border">
+          <button
+            onClick={onClose}
+            className="px-4 py-2 rounded border cursor-pointer"
+          >
             Cancel
           </button>
           <button
@@ -59,7 +72,7 @@ export default function CreateGroupModal({
               onCreate({ name, members });
               onClose();
             }}
-            className="px-4 py-2 rounded bg-blue-600 text-white"
+            className="px-4 py-2 rounded bg-blue-600 text-white cursor-pointer"
           >
             Create
           </button>

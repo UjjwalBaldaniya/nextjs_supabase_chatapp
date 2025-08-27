@@ -1,6 +1,7 @@
 "use client";
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import Modal from "../ui/Modal";
+import { getProfiles, Profile } from "@/services/profile.services";
 
 export default function NewChatModal({
   open,
@@ -11,15 +12,26 @@ export default function NewChatModal({
   onClose: () => void;
   onStart: (userId: string) => void;
 }) {
-  const [query, setQuery] = useState("");
-  const dummyUsers = [
-    { id: "u1", name: "Alice" },
-    { id: "u2", name: "Bob" },
-    { id: "u3", name: "Charlie" },
-  ];
-  const filtered = dummyUsers.filter((u) =>
-    u.name.toLowerCase().includes(query.toLowerCase())
+  const [users, setUsers] = useState<Profile[]>([]);
+  const [query, setQuery] = useState<string>("");
+
+  const filtered = users.filter((u) =>
+    u.full_name.toLowerCase().includes(query.toLowerCase())
   );
+
+  const fetchProfiles = async () => {
+    try {
+      const response = await getProfiles();
+      setUsers(response.data.profile ?? []);
+    } catch (err: any) {
+      console.error("Error fetching profiles:", err);
+    }
+  };
+
+  useEffect(() => {
+    fetchProfiles();
+  }, []);
+
   return (
     <Modal open={open} onClose={onClose} title="Start new chat">
       <div className="mb-4">
@@ -39,18 +51,18 @@ export default function NewChatModal({
           >
             <div className="flex items-center gap-3">
               <div className="w-8 h-8 rounded-full bg-gray-200 flex items-center justify-center">
-                {u.name[0]}
+                {u.full_name[0]}
               </div>
-              <div>{u.name}</div>
+              <div>{u.full_name}</div>
             </div>
             <button
               onClick={() => {
                 onStart(u.id);
                 onClose();
               }}
-              className="px-3 py-1 bg-blue-600 text-white rounded"
+              className="px-3 py-1 bg-blue-600 text-white rounded cursor-pointer"
             >
-              Start
+              Chat
             </button>
           </li>
         ))}

@@ -34,13 +34,13 @@ export default function Sidebar({
         <div className="flex gap-2">
           <button
             onClick={onOpenNewChat}
-            className="px-3 py-1 rounded bg-blue-600 text-white text-sm"
+            className="px-3 py-1 rounded bg-blue-600 text-white text-sm cursor-pointer"
           >
             New
           </button>
           <button
             onClick={onOpenCreateGroup}
-            className="px-3 py-1 rounded border text-sm"
+            className="px-3 py-1 rounded border text-sm cursor-pointer"
           >
             Group
           </button>
